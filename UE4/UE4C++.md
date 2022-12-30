@@ -604,6 +604,9 @@ FDelegateTest TestDelegate;
 
 3. 动态委托： 顾名思义，就是允许动态绑定，它可以序列化，也就是说可以在蓝图中使用，
 4. 动态多播委托： 这个更容易理解，它就是蓝图中的事件调度器（EventDispatcher），可以用其在C++和蓝图中绑定和调用委托。
+
+#Test
+## SomeTestCommit
 ##其他
 1. UE4函数，事件，宏的区别
    1. 执行引脚
@@ -619,8 +622,8 @@ FDelegateTest TestDelegate;
    2. 函数可以有返回值，事件没有返回值。
         >1. 函数调用会立刻执行等待结果，事件调用只是触发
         >2. 函数执行在同一线程，事件执行在不同线程
-    1. 函数可以有局部变量，事件没有局部变量
-    2. 没有返回值的函数，再被子类Override时会变成事件
+    3. 函数可以有局部变量，事件没有局部变量
+    4. 没有返回值的函数，再被子类Override时会变成事件
 3. Blueprintimplementable和BlueprintNativeEvent之间有什么区别？
    BlueprintImplementableEvent和BlueprintNativeEvent两者都是函数标记，用于修饰函数的
     BlueprintImplementableEvent:在C++可以声明函数(不能定义，蓝图重写)，在C++里调用该函数，蓝图内重写该函数
