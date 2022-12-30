@@ -605,8 +605,6 @@ FDelegateTest TestDelegate;
 3. 动态委托： 顾名思义，就是允许动态绑定，它可以序列化，也就是说可以在蓝图中使用，
 4. 动态多播委托： 这个更容易理解，它就是蓝图中的事件调度器（EventDispatcher），可以用其在C++和蓝图中绑定和调用委托。
 
-#Test
-## SomeTestCommit
 ##其他
 1. UE4函数，事件，宏的区别
    1. 执行引脚
