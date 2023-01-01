@@ -6,13 +6,13 @@
 
 
 
-<!-- <iframe 
+<iframe 
     height=550
     width=1080
     src="https://vdn.vzuu.com/SD/e7b489d6-ec61-11ea-acfd-5ab503a75443.mp4?disable_local_cache=1&bu=078babd7&c=avc.0.0&f=mp4&expiration=1672595470&auth_key=1672595470-0-0-b6430047f4edd5502a5841cf762c4f7e&v=ali&pu=078babd7)"     
     frameborder=0 
     allowfullscreen>>
-</iframe> -->
+</iframe>
 除了普通的移动之外，还有一些复杂的移动是很难模拟的，比如官方给的例子：一个举着锤子的人向前挥舞，一开始速度比较慢，中间挥舞时由于角色控制不住速度会很快，到最后锤子落地时，速度又会变得很慢，角色会踉跄的走两步。
 
 然而，当玩家发起一次特殊攻击，在这种攻击下，模型已预先设定好向前冲的动作。如果所有的角色动画都是基于玩家胶囊体的，这样的动画会导致角色迈出胶囊体，从而在事实上失去碰撞，并且一旦动画播放结束，玩家就会滑回其碰撞位置。
