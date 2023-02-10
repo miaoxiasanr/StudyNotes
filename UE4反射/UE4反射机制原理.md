@@ -1,3 +1,4 @@
+
 #UE4反射机制原理剖析
 
 ![](../Photo/UE4Reflection.jpg)
@@ -11,6 +12,7 @@
 5. 反射系统里需要访问的float，int32等变量，则是由继承自UProerty的子类来表示的。
 
 ##用一个例子去看反射系统
+
 创建一个名为ReflectionStudy的工程。
 里面一般分为几类文件：
 * ReflectionStudy.generated.cpp:一个工程只有一个，这个文件是用来为每个支持反射的类生成反射信息的代码，比如注册属性、添加源数据等。
@@ -19,6 +21,7 @@
 * ****.generated.这个就是为每个支持反射的头文件生成的对应的宏的代码。
 
 ###类定义
+
 ~~~c++
 // Fill out your copyright notice in the Description page of Project Settings.
 
@@ -48,7 +51,9 @@ protected:
 	void ImplementableFuncTest();
 };
 ~~~
+
 ###UHT生成的.generated.h文件
+
 ReflectionStudyGameMode.generated.h部分代码
 ~~~c++
  #define ReflectionStudy_Source_ReflectionStudy_ReflectionStudyGameMode_h_14_RPC_WRAPPERS_NO_PURE_DECLS \
@@ -71,7 +76,9 @@ ReflectionStudyGameMode.generated.h部分代码
 	}
 ~~~
 * UHT帮我们自动生成了如上代码，之所以生成的每个函数前面有一个exec前缀，是因为UE4蓝图调用约定。
+
 ####exec前缀函数
+
 * C++直接调用或者蓝图的实现中调用C++默认版本(类似于C++虚函数的重载时，经常会调用一下父类函数)，都会先调用这个exec版本，最终调用到_Implementation后缀的版本。
 * exec版本函数是由DECLARE_FUNCTION这个宏展开
 ~~~c++
@@ -194,6 +201,7 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
 ~~~
 
 ### .generated.cpp文件中的相关内容
+
 ~~~c++
 FName REFLECTIONSTUDY_ImplementableFuncTest = FName(TEXT("ImplementableFuncTest"));
 FName REFLECTIONSTUDY_NavtiveFuncTest = FName(TEXT("NavtiveFuncTest"));
@@ -262,7 +270,9 @@ virtual UClass* Register() const override
 ~~~
 * 在Register里调用了StaticClass，所以引擎会在启动后的某个时机，遍历DeferredClassRegistration这个数组，对每个对象调用Register函数，调用对应的StaticClass,再调用GetPrivateStaticClass，这就是这个函数被第一次调用的时候，然后构造一个UClass对象。
 * 在这个时候，我们得到了所有类对应的反射信息，但是这些反射对象还没有完全填充好所有的反射信息，只填充好了可以被蓝图调用的C++ exec版本函数的信息。剩下信息在构造参数里填充。
+
 ####TClass::GetPrivateStaticClass
+
 AutoInitializeAMyActor 这个全局变量最终会调用到这里。这个函数的作用就是构造一个UClass对象来保存AMyActor这个类的反射信息。这个函数创建了一个局部静态变量PrivateStaticClass，在首次调用时进行初始化，之后的调用都是返回首次调用的初始化结果，所以不管AMyActor有多少个实例，他们的反射信息都是一样的。
 初始化PrivateStaticClass是通过调用GetPrivateStaticClassBody();原型如下：
 ~~~c++
