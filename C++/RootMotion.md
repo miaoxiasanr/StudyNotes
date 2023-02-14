@@ -1,3 +1,6 @@
+- [RootMotion](#rootmotion)
+  - [RootMotion概述](#rootmotion概述)
+
 # RootMotion
 ## RootMotion概述
 **RootMotion，跟骨骼位移，属于移动组与动画系统相结合的一个部分，表示角色的整体移动(包括物理)是由动画来驱动的。**

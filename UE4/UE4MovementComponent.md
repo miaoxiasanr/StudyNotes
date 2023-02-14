@@ -1,3 +1,27 @@
+
+- [UE4MovementComponent](#ue4movementcomponent)
+	- [移动组件的意义](#移动组件的意义)
+	- [移动实现的基本原理](#移动实现的基本原理)
+		- [移动组件子类](#移动组件子类)
+			- [UMovementComponent](#umovementcomponent)
+			- [UNavMovementComponent](#unavmovementcomponent)
+			- [UPawnMovementComponent](#upawnmovementcomponent)
+			- [UCharacterMovementComponent](#ucharactermovementcomponent)
+			- [UProjectileMovementComponent](#uprojectilemovementcomponent)
+	- [各个移动状态细节处理](#各个移动状态细节处理)
+		- [Walking](#walking)
+			- [FindFloor流程](#findfloor流程)
+			- [Walking的位移计算](#walking的位移计算)
+		- [Falling](#falling)
+			- [Jump](#jump)
+		- [Swimming](#swimming)
+		- [Flying](#flying)
+	- [移动同步解决方案](#移动同步解决方案)
+		- [服务器角色正常的移动流程](#服务器角色正常的移动流程)
+		- [Autonomous角色](#autonomous角色)
+			- [移动流程](#移动流程)
+
+# UE4MovementComponent
 ## 移动组件的意义
 移动组件看起来是一个和移动相关的组件，但其涉及到状态机，同步解决方案，物理模块，不同移动状态的细节处理，动画以及其他组件(Actor)之间的调用关系等内容。
 

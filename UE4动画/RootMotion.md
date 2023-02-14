@@ -1,3 +1,18 @@
+- [RootMotion](#rootmotion)
+  - [RootMotion概述](#rootmotion概述)
+  - [RootMotion单机流程和原理](#rootmotion单机流程和原理)
+    - [动画数据初始化](#动画数据初始化)
+      - [对于动画蓝图里面的动画数据](#对于动画蓝图里面的动画数据)
+      - [移动组件PerformMovement](#移动组件performmovement)
+        - [Prepare RootMotion阶段](#prepare-rootmotion阶段)
+  - [RootMotion的同步](#rootmotion的同步)
+    - [Simulated客户端同步](#simulated客户端同步)
+      - [动画Montage初始化](#动画montage初始化)
+      - [移动组件SimulatedTick](#移动组件simulatedtick)
+    - [Autonomous客户端的同步](#autonomous客户端的同步)
+      - [Montage初始化：](#montage初始化)
+  - [总结](#总结)
+
 # RootMotion
 
 ## RootMotion概述
