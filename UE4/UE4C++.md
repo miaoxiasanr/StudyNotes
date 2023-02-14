@@ -1,5 +1,5 @@
-#UE4
-##编译工具
+# UE4
+## 编译工具
 UBT(UnrealBuiltTool，c#):UE4的自定义工具，各个模块的编译并处理各模块之间的依赖关系。我们编写的Target.cs,Build.cs都是为这个工具服务的。
 UHT(UnrealHeaderTool，c++):C++代码解析生成工具，负责处理引擎反射系统编译所需要的信息，是支持UObject系统的自定义解析的代码生成工具。
 代码编译分两个阶段进行：
@@ -8,19 +8,19 @@ UHT(UnrealHeaderTool，c++):C++代码解析生成工具，负责处理引擎反�
 
 完整编译流程:UBT搜集目录中的.cs文件，然后UBT调用UHT分析需要分析的.h,.cpp文件(典型根据文件是否含有#include"FileName.generated.h"，是否含有UCLASS(),UPROPERTY()等宏)生成generated.h和gen.cpp文件，生成的问件路径为Intermediate->build-Win64-UE4-inc,最后UBT调用MSBuild，将.h.cpp和generated.f,gen.cpp结合到一起然后编译
 
-##UE4反射(可以选择加入)
+## UE4反射(可以选择加入)
 具体作用：对于一个类，我们可以会得这个类的所有属性和方法，而对于一个类对象，我们可以调用他所拥有的方法和属性
 > UE4使用反射可以实现序列化。editor的details panel。垃圾回收，网络复制，蓝图/c++通信和相互调用等功能。
 ###反射系统实现原理
 UObject是反射系统的核心。每一个继承UObject且支持反射系统的类型都有一个相应的UClass或者它的子类，UClass中包含了该类的信息。UObject与UClass也组成了UE4对象系统的基石。
-###标记
+### 标记
 为了标记一个含有反射类型的文件，需要添加一个特殊的include，这时UHT知道需要处理这个文件
 > include"FileName.generated.h"
 可以使用UENUM(),UCLASS(),UFUNCTION(),UPROPERTY()来标记不同的类型和成员变量，标记也可以包含额外的描述关键字。
 也可以声明成非反射类型的属性，这些属性对反射系统是非可见性的(因此储存一个引用UObject的裸指针是非常危险的，因为垃圾回收系统看不到这个引用，而UE4也提供了FReferenceCollector来手动添加对UObject的引用)
 
-##游戏开发中的3C
-###Character
+## 游戏开发中的3C
+### Character
 * 移动
   * 看起来很简单，其实有很多细节
   * 角色状态
@@ -32,7 +32,7 @@ UObject是反射系统的核心。每一个继承UObject且支持反射系统的
 * 技能
 * 天赋
 * 等等
-###Control
+### Control
 * 不同输入设备
   * 手柄 鼠标 模拟装置
 * 不同的输入
@@ -42,7 +42,7 @@ UObject是反射系统的核心。每一个继承UObject且支持反射系统的
 * 反馈
   * 震动
 * 组合键&按键序列
-###Camera
+### Camera
 * 相机基本属性
   * FOV(Field of view)
   * POV(Point of view)
@@ -59,8 +59,8 @@ UObject是反射系统的核心。每一个继承UObject且支持反射系统的
 * 主观感受
   * 比如加速->加速度，动态模糊，拉近相机
   * 相机惯性
-##软引用和强引用
-###软引用
+## 软引用和强引用
+### 软引用
 即对象A的通过间接机制（例如字符串形式的对象路径）来引用对象B
 * 软引用可以减少加载负担，可以缩短程序启动时间
 * 软引用不会主动加载到内存中，在需要时加载，用完释放。
@@ -163,7 +163,7 @@ if (SoftClassPtr_Actor.IsPending())
 	UClass* MyActor = SoftClassPtr_Actor.Get();
 }
 ~~~
-###强引用
+### 强引用
 即对象A引用对象B，并导致对象B在对象A加载是加载
 * 强引用过多会导致运行时很多暂时用不到的资源也被加载到内存中
 * 大量资源会导致进程阻塞，致使程序启动时间过长
@@ -219,9 +219,9 @@ if (BPClassFinder.Succeeded()) //或者使用 BPClassFinder.Class != nullptr 判
 }
 ~~~
 
-##同步加载和异步加载
+## 同步加载和异步加载
 对于资源操作，UE4有同步加载和异步加载两种方式。同步加载是阻塞操作，比如LoadObject函数，会阻塞主线程，如果加载一个较大资源，或者外部依赖较多的资源，会造成游戏明显卡顿。异步加载会使用另一个专用的异步加载线程来加载资源，或者依然在主线程做加载，只是使用异步编程模式，在tick中分散加载一些资源。异步加载不会阻塞主线程，常用的LevelStreaming和SeamlessTravel，以及EventDrivenLoader都使用了此方式，来营造流畅的游戏体验和编辑器使用体验。
-###同步加载
+### 同步加载
 同步加载阻塞主进程
 1. LoadObject
    用来加载资源对象
@@ -317,7 +317,7 @@ TSharedPtr<FStreamableHandle> Handle3 = streamableManager.RequestSyncLoad(SoftOb
 	}
 }
 ~~~
-###异步加载
+### 异步加载
 * 为了避免阻塞主线程，可以使用异步加载的方式加载资源
 * 异步加载完成后，可以设置回调函数
 1. FSreatmableManager::RequestAsyncLoad
@@ -406,14 +406,14 @@ void ALoadActor::OnMultiAssetsLoadFinshed2()
 }
 
 ~~~
-##Actor的生命周期
+## Actor的生命周期
 ![](https://docs.unrealengine.com/4.27/Images/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Actors/ActorLifecycle/ActorLifeCycle1.png)
 UE4创建Actor的方法主要有如下几种
 1. 从磁盘加载
 2. PlayerInEditor
 3. SpawnActor(动态生成)
 4. SpawnActorDeferred(延迟生成)
-###从磁盘加载
+### 从磁盘加载
 已位于关卡中的Actor使用此路径，如LoadMap发生时，或者AddToWorld(从子关卡或流关卡)被调用时，一般都是提前搭建好的场景中资源的加载方式。
 1. 包/关卡中的Actor从磁盘中进行加载
 2. PostLoad，在序列化Actor从磁盘加载完成后调用，在此处可执行自定义版本化和修复操作。PostLoad和PostActorCreates互斥
@@ -423,7 +423,7 @@ UE4创建Actor的方法主要有如下几种
    * InitializeComponent
    * PostInitializeCompinents；Actor的组件初始化后调用
 5. BeginPlay 关卡开始后调用
-###PlayerInEditor
+### PlayerInEditor
 与磁盘加载十分相似，然而Actor却并非从磁盘中加载，而是从编辑器中复制而来，一般是在Debug是资源的加载方式
 1. PostDuplicate被调用
 2. InitalizeActorForPlay
@@ -432,7 +432,7 @@ UE4创建Actor的方法主要有如下几种
    * InitializeComponent
    * PostInitializeCompinents；Actor的组件初始化后调用
 4. BeginPlay 关卡开始后调用
-###SpawnActor
+### SpawnActor
 生成Actor实例的路径，在实际工程中一般是通过SpawnActor等函数加载的资源
 1. SpawnActor被调用
 2. PostSpawnInitialize
@@ -446,7 +446,7 @@ UE4创建Actor的方法主要有如下几种
 
 6. OnActorSpawned 在UWorld上广播
 7. BeginPlay被调用
-###SpawnActorDeferred(延迟生成)
+### SpawnActorDeferred(延迟生成)
 将任意属性设置为"Expose On Spawn"即可延迟Actor的生成
 1. SpawnActorDeferred 生成程序化Actor，在蓝图构建脚本之前进行额外设置
 2. PostSpawnInitialize
@@ -461,7 +461,7 @@ UE4创建Actor的方法主要有如下几种
 
 7. OnActorSpawned 在UWorld上广播
 8. BeginPlay被调用
-###生命周期的结束
+### 生命周期的结束
 1. Destroy 游戏在Actor需要被移除时手动调用，但游戏进程仍在继续，Actor被标记为等待销毁并从关卡的Actor数组中移除
 2. EndPlay 在数个地方进行调用，保证Actor的生命走向终点，调用EndPlay的全部情形：
    1. 对Destroy显式调用
@@ -488,7 +488,7 @@ UActorComponent::OnComponentDestroyed
 
 参考
 [ActorComponent流程分析](https://zhuanlan.zhihu.com/p/74084967)
-##垃圾回收
+## 垃圾回收
 1. 目标
    被UPROPERTY宏修饰或在AddReferencedObject函数被手动调用添加引用的UObject*成员，才能被GC识别或追踪(USTRUCT宏修饰的结构体对象和普通对象一样不会被GC管理)
    当UObject对象没有直接或间接被根节点对象引用或被设置成PendingKill状态，就会被GC标记位垃圾，并被GC回收
@@ -499,8 +499,8 @@ UActorComponent::OnComponentDestroyed
    1. 主动引发：执行操作后手动调用GC，而且方式有多种，游戏中可以调用ForceGarbageCollection来让World下次tick时进行垃圾回收。也可以直接调用CollectGarbage进行垃圾回收，引擎中大部分情况都用这种方式主动引发
    2. 自动引发：游戏中大部分垃圾回收都是由UE4自动引发的，普通情况下不需要手动调用GC，当World进行tick时，会调用UEngine::ConditionalCollectGarbage()函数，函数中进行了一些判断，当满足GC条件时，才会执行GC
 4. 防止GC的方法：调用AddToRoot函数将UObject对象加到根节点上，调用RemoveFromRoot去除标记会被GC
-##委托
-###单播委托
+## 委托
+### 单播委托
 单播委托指只能绑定一个函数指针的委托，也就是当执行委托时只能触发一个唯一绑定的函数
 单播委托可以绑定一个无返回值或有返回值的函数
 ~~~c++
@@ -563,7 +563,7 @@ Broadcast调用后，会执行所有绑定的委托，但是委托的执行顺�
 |函数|描述|
 |-|-|
 |Broadcast()|执行所有绑定对的委托|
-###动态委托
+### 动态委托
 动态委托可以序列化，其函数可以按命名查找，但执行速度比常规委托慢。
 ~~~c++
 DECLARE_DYNAMIC_DELEGATE(DelegateName);
@@ -581,7 +581,7 @@ DECLARE_DYNAMIC_DELEGATE_XXXParam(DelegateName,Param1Type,...);
 |IsBound()||
 |Execute()||
 |ExecuteIfBound|绑定一个委托时执行调用|
-###动态多播委托
+### 动态多播委托
 动态多播委托可以暴露给蓝图使用，并且声明宏中不仅包含变量类型，也包含变量名。如果暴露给蓝图，需要给委托变量的UPROPERTY宏添加BlueprintAssignable标识符
 ~~~c++
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(DelegateName);
@@ -595,7 +595,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ONEPARAM(FDelegateTest, class AActor*, MyActo
 UPROPERTY(BlueprintAssignable)
 FDelegateTest TestDelegate;
 ~~~
-###委托应用场景
+### 委托应用场景
 1. 单播委托： 当我们只需要在C++中绑定和调用，且只有一个函数需要绑定委托时，可以使用单播委托。
 当然，这个委托的绑定和调用可以通过二次函数调用暴露给蓝图。就是绑定和调用的函数再包裹一层，但一般没有必要。
 一般常用的就是函数回调时，通过绑定到单播委托进行回调。
@@ -605,7 +605,7 @@ FDelegateTest TestDelegate;
 3. 动态委托： 顾名思义，就是允许动态绑定，它可以序列化，也就是说可以在蓝图中使用，
 4. 动态多播委托： 这个更容易理解，它就是蓝图中的事件调度器（EventDispatcher），可以用其在C++和蓝图中绑定和调用委托。
 
-##其他
+## 其他
 1. UE4函数，事件，宏的区别
    1. 执行引脚
     调用函数的触发事件只能有一个执行引脚，而宏在调用的时候可以有很多执行引脚进入或输出，例如Flip Flop，A输出和B输出交替。
@@ -647,7 +647,7 @@ FDelegateTest TestDelegate;
     [UPROPERTY](https://blog.csdn.net/u012793104/article/details/78480085?spm=1001.2014.3001.5501)
     [USTRUCT](https://blog.csdn.net/u012793104/article/details/78594119)
     [UFUNCTION](https://blog.csdn.net/u012793104/article/details/78487893)
-##引用
+## 引用
 [资源的引用](https://www.cnblogs.com/shiroe/p/14691199.html)
 [资源的同步加载与异步加载](https://www.cnblogs.com/shiroe/p/14710066.html)
 [UE4Actor生命周期](https://zhuanlan.zhihu.com/p/308217207)

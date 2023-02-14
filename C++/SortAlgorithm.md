@@ -1,7 +1,7 @@
-#排序算法
-##排序算法总览
+# 排序算法
+## 排序算法总览
 ![](https://pic.leetcode-cn.com/1629483637-tmENTT-Picture2.png)
-##冒泡排序
+## 冒泡排序
 ![动图演示](https://www.runoob.com/wp-content/uploads/2019/03/bubbleSort.gif)
 * 原理
 比较两个相邻的元素，如果第一个比第二个大，就交换他们两个
@@ -26,7 +26,7 @@ void BubbleSort(vector<int>& res)
 	}
 }
 ~~~
-###冒泡排序优化1
+### 冒泡排序优化1
 * 优化
   冒泡排序的最大问题是不管你有序还是无序，一直在循环，可以用一个临时标记该数组是否有序，如果有序就不用再遍历了；
 * 代码实例
@@ -53,7 +53,7 @@ void BubbleSort1(vector<int>& res)
 	}
 }
 ~~~ 
-###冒泡排序优化2
+### 冒泡排序优化2
 * 优化
   更新无序数组边界
 * 代码实例
@@ -85,7 +85,7 @@ void BubbleSort2(vector<int>& res)
 	}
 }
 ~~~
-##选择排序
+## 选择排序
 ![](https://www.runoob.com/wp-content/uploads/2019/03/selectionSort.gif)
 * 原理
   在未排序的数组中找到最大(最小)元素，存放到排列序列的起始位置
@@ -115,7 +115,7 @@ void SeletionSort(vector<int>& res)
 	}
 }
 ~~~
-##插入排序
+## 插入排序
 ![](https://www.runoob.com/wp-content/uploads/2019/03/insertionSort.gif)
 * 原理
   从第一个元素开始，该元素可以认为是已经被排序
@@ -147,7 +147,7 @@ void InsertSort(vector<int>& res)
 	}
 }
 ~~~
-##希尔排序
+## 希尔排序
 ![](https://img-blog.csdnimg.cn/20191204143506608.gif)
 * 原理
   插入排序的优化，插入排序每次只能将数据移动一位，希尔排序为了加快插入的速度，让数据移动的时候实现跳跃移动，节省开支
@@ -175,7 +175,7 @@ void shell_sort(vector<int>& res)
 	}
 }
 ~~~
-##堆排序
+## 堆排序
 ![](https://www.runoob.com/wp-content/uploads/2019/03/heapSort.gif)
 * 原理
   将排序的序列构建成一个大顶堆。整个序列的最大值就是堆顶的根节点，然后将它移走，然后将剩余的n-1个序列重新构造成一个堆，这样就会得到n个元素中次大的元素，如此反复执行，得到一个有效序列。
@@ -224,7 +224,7 @@ void HeapAdjust(vector<int>& res, int curr, int len)
 	}
 }
 ~~~
-##快速排序
+## 快速排序
 ![](https://pic.leetcode-cn.com/1612615552-rifQwI-Picture1.png)
 * 原理
   两个核心点:哨兵划分和递归
@@ -264,7 +264,7 @@ int Partition(vector<int>& res, int low, int high)
 	return low;
 }
 ~~~
-##归并排序
+## 归并排序
 ![](https://pic.leetcode-cn.com/1632675739-CNHaOu-Picture1.png)
 * 原理
   [分]：不断的将数组从中点位置划分开，将原数组的排序问题转化为子数组的排序问题

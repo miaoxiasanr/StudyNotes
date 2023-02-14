@@ -1,15 +1,15 @@
-##移动组件的意义
+## 移动组件的意义
 移动组件看起来是一个和移动相关的组件，但其涉及到状态机，同步解决方案，物理模块，不同移动状态的细节处理，动画以及其他组件(Actor)之间的调用关系等内容。
 
-##移动实现的基本原理
+## 移动实现的基本原理
 ###移动组件与玩家角色
 角色的移动本质上就是合理的改变坐标位置，在UE里面角色移动的本质就是修改某个特定组件的坐标位置。例如在一个Character里
 ![](https://pic2.zhimg.com/80/v2-23bcb4bfb6e5e094519aa1aef840e5a9_720w.webp)
 通常将CapsuleComponent组件作为自己的根组件，而Character的坐标实际上就是其RootComponent的坐标，Mesh等其他组件会跟随胶囊体移动，移动组件在初始化的时候会把胶囊体设置为移动基础组件UpdateComponent，随后的操作都是在计算UpdateComponent的位置。
 
-###移动组件子类
+### 移动组件子类
 ![](https://pic2.zhimg.com/80/v2-fc2ec78726823ebb61f7fa03e96cc335_720w.webp)
-####UMovementComponent
+#### UMovementComponent
 作为移动组件的基类实现了基本的移动接口SafeMovementUpdatedComponent(),可以调用UpdateComponent组件的接口函数来更新位置信息
 ~~~C++
 bool UMovementComponent::MoveUpdatedComponentImpl( const FVector& Delta, const FQuat& NewRotation, bool bSweep, FHitResult* OutHit, ETeleportType Teleport)
@@ -29,14 +29,14 @@ bool USceneComponent::InternalSetWorldLocationAndRotation(FVector NewLocation, c
 ~~~
 而PrimativeComponent又继承于USceneComponent，增加了渲染以及物理方面的信息。我们常见的Mesh组件以及胶囊体组件都是继承自UP
 rimitiveComponent，因为想要实现一个真实的移动效果。
-####UNavMovementComponent
+#### UNavMovementComponent
 该组件更多的是提供给AI寻路的能力，同时包括基本的移动状态，比如是否能游泳，是否能飞行。
 
-####UPawnMovementComponent
+#### UPawnMovementComponent
 UPawnMovementComponent提供了AddInputVector(),可以实现接收玩家的输入并根据输入值修改Pawn的位置。
-####UCharacterMovementComponent
+#### UCharacterMovementComponent
 里面非常精确的处理了各种常见的移动状态细节，实现了比较流畅的同步解决方案。各种位置矫正，平滑处理才达到了目前的移动效果。
-####UProjectileMovementComponent
+#### UProjectileMovementComponent
 用来模拟弓箭，子弹等抛物线的运动状态。
 
 
@@ -52,14 +52,14 @@ UPawnMovementComponent提供了AddInputVector(),可以实现接收玩家的输�
 
 
 
-##各个移动状态细节处理
-###Walking
+## 各个移动状态细节处理
+### Walking
 行走模式可以说是所有移动模式的基础，也是各个移动模式里面最为复杂的一个。为了模拟出真正世界的移动效果，玩家的脚下必须要有一个可以支撑不会掉落的物理对象(类似地面)，在移动组件里面，这个地面的通过成员变量FFindFloorResult CurrentFloor来记录。在游戏的一开始的时候，移动组件就会通过根据当前配置默认的MovementMode，如果是Walking，就会通过FindFloor操作来找到当前的地面。
-####FindFloor流程
+#### FindFloor流程
 FindFloor本质上就是通过胶囊体Sweep检测来找到脚下的地面，所以地面必须要有物理属性，而且通道类型要设置与玩家的Pawn有Block类型。
 Sweep检测用的是胶囊体而不是射线检测，方便斜面处理，计算可站立半径等(HitResult里面的Normal与ImpartNormal在胶囊体Sweep检测时不一定相同，如图所示)
 ![](https://pic2.zhimg.com/80/v2-650101da3aacc97379e1b87ebf82d20d_720w.webp)
-####Walking的位移计算
+#### Walking的位移计算
 ~~~c++
 void UCharacterMovementComponent::PhysWalking(float deltaTime, int32 Iterations)
 {
@@ -350,7 +350,7 @@ bool UPrimitiveComponent::MoveComponentImpl( const FVector& Delta, const FQuat& 
 * 判断当前的碰撞体是否可以踩上去，如果可以的话就试着踩上去，如果过程中发现没有踩上去，也会调用SlideAlongSurface()沿着碰撞滑动
 
 移动后还会立刻判断玩家是否进入水中，或者进入Falling状态，如果是的话立刻切换新的状态。
-###Falling
+### Falling
 Falling状态是处理Walking以外最常见的状态，只要玩家在空中(无论是挑起还是下落)，玩家都会处于Falling状态。
 在处理时，首先计算玩家通过输入控制的水平速度，因为玩家在空中也可以受到玩家控制的影响。随后获取重力计算速度。重力的获取是通过Volume体积获取。
 ~~~c++
@@ -391,7 +391,7 @@ SafeMoveUpdatedComponent( Adjusted, PawnRotation, true, Hit);
 3. 墙面等一些不可以踩上去的物体
    首先会执行HandleImpact给碰到的对象一个力，随后调整ComponentSlideVector计算滑动的位移，由于碰撞到障碍后，玩家的速度会有变化，这时候重新计算一下速度，再次调整玩家的位置和方向。如果玩家这时候有水平方向的位移，还会通过LimitAirControl来限制玩家的速度，
 
-####Jump
+#### Jump
 跳跃响应的基本流程
 1. 绑定触发响应事件
 ~~~c++
@@ -421,7 +421,7 @@ void ACharacter::StopJumping()
 3. 在一次PerformMovement结束后，就会执行ClearJumpInput,设置bProcessdJump为false。但是不会清除JumpCurrentCount这样继续处理多段跳
 4. 玩家松开按键p时也会设置bPressedJump为false。清空相关状态。如果玩家仍在空中，那也不会清除JumpCurrentCount,一旦bPressedJump为false，就不会处理任何跳跃操作了；
 5. 如果玩家在空中进入ACharacter::CheckJumpInput，如果JumpCurrentCount小于JumpMaxCount，玩家就可以继续执行跳跃操作了。
-###Swimming
+### Swimming
 游泳状态表现上来看是一个右移动惯性(松手后不会立刻停止)，受重力影响小(在水中慢慢下落或不动)，移动速度比平时慢(表现水有阻力)的状态。而玩家是否在水中的默认检测逻辑比较简单，就是判断当前的UpdateComponent所在的Volume是否为WaterVolume。
 CharacterMovement组件里面有浮力大小配置为Buoyancy，根据玩家潜入水中的程度(ImmersionDepth返回0-1)计算最终的浮力。随后要计算速度，需要获取Volume里面的摩擦力Friction，然后传入CalcVelocity里面，这体现出说中移动速度变慢的效果。随后在Z方向通过计算浮力大小计算该方向的速度，随着玩家潜水的程度，会发现玩家在Z方向的速度越来越小，一旦全身浸入了水中，在Z轴方向的重力加速度就会完全忽略。
 
@@ -430,15 +430,15 @@ CharacterMovement组件里面有浮力大小配置为Buoyancy，根据玩家潜�
 
 水中移动的惯性表现处理？
 计算速度时有两个传入的参数与Walking不同，一个是Friction表示摩擦力，另一个是BrakingDeceleration表示刹车的反向速度，在加速度为0的时候(表示玩家的输入已经被清空)，水中的传入的摩擦力要远比地面摩擦力。
-###Flying
+### Flying
 首先根据前面输入计算Acceleration.然后根据摩擦力开始计算当前的速度，速度计算后调用SafeMoveUpdatedComponent进行移动。如果碰到障碍，就看能不能踩上去，不能的话处理碰撞，沿着障碍表面滑动。
-##移动同步解决方案
+## 移动同步解决方案
 * 前面关于移动逻辑的细节处理都是在PerformMovement里面实现的，我们可以把函数PerformMovement当成一个完整的移动处理流程。
 * 这个流程无论是在客户端还是在服务器都必须要执行。
 * 在网络游戏中，为了让所有的游戏玩家体验一个几乎相同的世界，需要保证一个具有绝对权威的服务器，这个服务器可以修正客户端的不正常移动行为，保证各个客户端的一致性。
 * 相关同步的操作都是基于UCharacterMovement组件实现的。
 * 移动组件的同步全都是基于RPC不可靠传输的，
-###服务器角色正常的移动流程
+### 服务器角色正常的移动流程
 对于DedicateServer，它的本地没有控制的角色，对移动的处理分为两种情况
 1. 该角色在客户端是模拟角色(Simulate)，移动完全是有服务器同步过去，如各类AI角色。这类移动一般是服务器上行为树主动触发的
 2. 该角色咋客户端是拥有自治(Autonomous)权利的Character，如玩家控制的主角，这类移动一般是客户端接收玩家输入数据本地模拟后，在通过RPC发给服务器进行模拟的。
@@ -511,7 +511,7 @@ void UCharacterMovementComponent::TickComponent(float DeltaTime, enum ELevelTick
 }
 ~~~
 
-###Autonomous角色
+### Autonomous角色
 一个客户端的角色完全通过服务器同步过来的，他身上的移动组件也一样被同步过来的，所以游戏一开始客户端的角色与服务器的数据是完全相同的。对于Autonomous角色，大致的实现思路如下
 > 客户端通过接收玩家的Input输入，开始进行本地的移动模拟流程，移动前首先创建一个移动预测数据结构FNetworkPredictionDate_Client_character，执行PerformMovement移动，随后保存当前的移动数据(速度，旋转，时间戳以及移动结束的位置等信息)到前面的FNetworkPredictionDate里面的SavedMoves列表里面，并通过RPC将当前的Move数据发送该数据到服务器。然后继续进行TickComponent操作，重复这个流程。
 
@@ -575,7 +575,7 @@ void ACharacter::PostNetReceiveLocationAndRotation()
 
 ~~~
 ReplicatedMovement记录了当前Character的位置旋转、速度等重要的移动数据，这个成员在SImulate或者开启物理模拟的客户端才执行。同时可以看到Character大部分的同步属性都是和移动同步有关，而且基本都是SimulateOnly,表示这些属性只有在模拟客户端时才会进行同步。除了ReplicatedMovement属性以外，ReplicatedMovementMode同步了当前的移动模式，ReplicatedBasedMovement同步了角色所在的Component的相关数据。。
-####移动流程
+#### 移动流程
 ![](https://pic3.zhimg.com/80/v2-6048fa8b09eee5c9eb7ffe35918f29be_720w.webp)
 
 [移动组件详解](https://zhuanlan.zhihu.com/p/34257208)

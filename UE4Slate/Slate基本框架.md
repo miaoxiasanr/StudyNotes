@@ -1,6 +1,6 @@
-#Slate基本框架
+# Slate基本框架
 ![](https://pic3.zhimg.com/80/v2-8c339a750c2ef4d919c42c73d0c31c76_720w.webp "Slate基本框架")
-##Swidget
+## Swidget
 UE4Slate框架中最基础的类是SWidget，Swidget以智能指针的形式存在，继承自TSharedFromThis,是Slate空间的抽象基类。基于SWidget的子类主要有三类，分别是SCompoudWidget,SLeafWidget,SPanel。
 
 他们三个最主要的区别在于能附加子空间的数目。

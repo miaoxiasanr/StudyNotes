@@ -1,9 +1,9 @@
-#UPROPERTY
+# UPROPERTY
 ~~~c++
 	UPROPERTY(Specifier,Specifier,...,meta="key=value,key=value,...")
 		ValueType ValueName;
 ~~~
-##属性标签
+## 属性标签
 * AdvancedDisplay
   属性会被放置在其出现的任意面板的高级(下拉)部分中
 * BlueprintAssignable
@@ -57,7 +57,7 @@
   属性为临时，意味着其无法被保存或加载，以此方法标记的属性将在加载时被0填充
 * SimpleDisport
   出现在细节面板的可见或可编辑属性，无需打开高级部分即可见
-##元数据标签
+## 元数据标签
 * AllowAbstract="true/false"
   用于SubClass和SoftClass属性，说明抽象类属性是否应显示在类选取器上
 * AllowedClassed="Class1,CLass2,..."

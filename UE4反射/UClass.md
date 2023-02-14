@@ -1,5 +1,5 @@
 
-##UClass
+## UClass
 类声明的语法如下所示
 ~~~c++
 UCLASS([Specifier,Specifier,...],[meta(key=value,key=value...)])
@@ -8,7 +8,7 @@ class classname:public ParentName
     GENERATED_BODY()
 }
 ~~~
-###类说明符
+### 类说明符
 * Abstract 
   抽象基类说明符是将类说明符声明为”抽象基类“，防止用户在编辑器中向世界添加此类的参与者，或在游戏中创建此类的实例。这对于那些本身没有意义的类很有用。
   例如，ATriggerBase基类是抽象的，而ATriggerBox子类不是抽象的，可以在世界中放置一个ATriggerBox类的实例并且他是有用的，而ATriggerBase的实例本身并不可用。
@@ -45,7 +45,7 @@ class classname:public ParentName
   属于此类的对象将永远不会保留到磁盘中，这与某些非永久的自然类(比如播放器或窗口)结合使用非常有用，此说明符会被传播到子类，但可以由NotTransient说明符重写。
 * MinimalAPI
   仅导致要导出的类的类型信息供其他模块使用，类可以被强制转换，但不能调用类的函数(内联方法除外)。还提高了编译时间，因为不需要在其他模块中访问所有函数的类导出所有内容。
-###元数据说明符
+### 元数据说明符
 * BlueprintSpawnableComponent
   如果存在，组件类可以由蓝图生成
 * BlueprintThreadSaft

@@ -1,6 +1,6 @@
-#RootMotion
+# RootMotion
 
-##RootMotion概述
+## RootMotion概述
 **RootMotion，跟骨骼位移，属于移动组与动画系统相结合的一个部分，表示角色的整体移动(包括物理)是由动画来驱动的。**
 一般来说，在大部分游戏的应用里面，玩家的移动与动画是分开的，移动系统只负责处理玩家的位置和旋转，动画系统只做对应的动画表现，只要移动的速度合适就可以与动画做到完美的匹配，也就是说动画播放的位置(即Mesh的位置)是由角色移动来驱动的(UE4里面，动画是胶囊体的位置数据来驱动的)。例如：如果胶囊体在向前移动，系统就会知道在角色上播放一个跑步或行走的动画，让角色看起来是在靠自己的力量移动。
 
@@ -37,17 +37,17 @@
 > FRootMotionSourseGroup:包含了一组RootMotionSourse的结构体，同一时刻可能有多个不同的力(或者说是RootMotionSourse)作用于玩家，移动组件可以根据权重优先级等混合出一个合理的移动位置。
 > FRootMotionServerToLocalIDMapping:作用于同步匹配客户端和服务器上面FRootMotionSourseGroup里面不同的RootMotionSourse
 
-##RootMotion单机流程和原理
-###动画数据初始化
-####对于动画蓝图里面的动画数据
+## RootMotion单机流程和原理
+### 动画数据初始化
+#### 对于动画蓝图里面的动画数据
 1. 绑定动画蓝图的Character进入场景时就已经开始各种动画数据相关的初始化(UAnimInstance::InitializeAnimation)，随后通过UpdateAnimation不断的更新动画蓝图里面的逻辑。同时还会把一部分逻辑交给FAnimInstanceProxy处理。
 ####对于非动画蓝图里面的Montage数据
 1. 一般是玩家手动触发Montage的播放，通过USkeletalMeshComponent找到对应的AnimInstance并执行UAnimInstance::Montage_Play;
 2. 创建一个FAnimMontageInstance并进行相关的初始化，开始真正的播放蒙太奇
 3. 判断蒙太奇是否带有RootMontage，是的话将会赋值给RootMotionMontageInstance，用于后续的ACharacter::IsPlayingNetworkedRootMotionMontage判断；
 4. Montage初始化之后就会在后续每帧执行的A尼玛Instance::UpdateAnimation里面参与计算了，在通常情况下，只要我们的动画更新方式不选择EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered,Montage都是会参与更新的，更新逻辑在UAnimInstance::UpdateMontage里面
-####移动组件PerformMovement
-#####Prepare RootMotion阶段
+#### 移动组件PerformMovement
+##### Prepare RootMotion阶段
 1. 移动组件在TickComponent的PerformMovement里，先判断是否处于RootMotion的状态。满足下面两个条件就会先做一些RootMotion相关数据的处理和清理
 > * CurrentRootMotion里面是否有ActiveRootMotionSourse
 > * 通过当前角色身上的Mesh组件函数USkeletalMeshComponent::IsPlayerRootMotion判断其是否处于RootMotion状态。
@@ -63,13 +63,13 @@
 5. 模拟结束，读取RootMotionParams的Transform来更新Rotation
 6. 清除移动组件的成员RootMotionParams里面的数据。
 
-##RootMotion的同步
+## RootMotion的同步
 在目前的引擎中，RootMotion只支持Montage的同步，基于Montage的同步流程。同步分为Simulated客户端以及Autonomous客户端两种情况
-###Simulated客户端同步
-####动画Montage初始化
+### Simulated客户端同步
+#### 动画Montage初始化
 1. 服务器本地先触发执行MontagePlay并赋值给RootMotionMontageInstance
 2. Simulated客户端在服务端触发MontagePlay后。通过属性回调随后触发MontagePlay
-####移动组件SimulatedTick
+#### 移动组件SimulatedTick
 1. 移动组件执行Tick，UCharacterMovementComponent::SimulatedTick(float Deltatime)
 2. 如果当前玩家的Mesh对应的AnimScriptINstance->RootMotionMode为RootMotionFromMontageOnly(也就是说其他三种ERootMotionMode不支持网络同步)，触发RootMotion在Simulated客户端的同步操作。
 ![](https://pic2.zhimg.com/80/v2-e2752755fb43956234e13d17e323ecf1_720w.webp)
@@ -93,8 +93,8 @@
 > * 平滑的逻辑大概是客户端记录了一个ClientDate数据去记录当前的Mesh偏移以及服务器的时间戳，在随后的每帧的Tick里面，不断的更新Offset偏移，让其逐渐为0，当偏移为0时Mesh就和胶囊体完全重合完成了平滑。
 
 
-###Autonomous客户端的同步
-####Montage初始化：
+### Autonomous客户端的同步
+#### Montage初始化：
 1. 在客户端本地先执行Montage播放,通过RPC通知服务器播放。
 2. 服务器通过RPC触发MontagePlay并赋值给RootMotionMontageInstance
    > 这里也可以先在服务器播放，通过属性回调触达Autonomous客户端进行播放
@@ -108,7 +108,7 @@
 2. 随后，在服务器执行UNetDriver::ServerReplicateActors的同步时，发送ACK(ClientAckGoodMove)或者Adjust(SendClientAdjustment).如果这时候服务器正在播放Montage且发现客户端数据有问题，就会执行ClientAdjustRootMotionSourcePosition进行纠正。否则就会执行正常的纠错流程。
 3. 客户端收到ClientAdjustRootMotionSourcePosition信息，首先会根据服务器传递的坐标等信息先更新移动组件的数据(执行ClientAdjustPosition)，随后根据服务器传递的MontagePosition来直接设置本地Montage动画的Position。
 
-##总结
+## 总结
 1. RootMotion本质上走的还是移动组件的处理流程，只不过其移动数据是从动画里面提取的，而且很明显的可以看出，RootMotion只支持Montage的同步，其他的模式根本不会走这套流程(IsPlayingNetworkedRootMotionMontage),其他模式也不会从动画蓝图Proxy里面提取相关的数据(FAnimInstanceProxy::TickAssetPlayerInstances).
 2. 之所以引进RootMotion的原因是动画系统(或者说是动画状态机)的同步时复杂而困难的，目前UE通用的同步方法时客户单和服务器各自维护一个状态机以及几个同步的属性值，然后通过这些属性的判断来同步动画，这里的动画状态机并没有同步。一旦动画系统复杂起来，各个状态之间的切换和转变会变得很复杂。
 3. 因为RootMotion本质上是为了提高表现效果才使用的方案，单机模拟效果尚可，对于还需要预测的网络同步就更困难了，除非是常规的线性运动的RootMotion，其他的不规则的运动几乎无法预测，而如果不预测，我们就很难应对网络抖动，一旦网络一卡整个表现不再流畅。所以当网络环境不好的情况下，RootMotion的表现实非常差的。

@@ -1,10 +1,10 @@
-#USTRUCT
-##结构体说明符
+# USTRUCT
+## 结构体说明符
 * Atomic 
   表面此结构应该永远序列化为单个对象，不会为该类创建自动生成代码
 * BlueprintType
   将此结构最为可以在蓝图中被用于变量的类型公开
-##元数据说明符
+## 元数据说明符
 * BlueprintSpawnableComponent
   如果存在，组件类可以由蓝图生成
 * BlueprintThreadSaft

@@ -1,5 +1,5 @@
-#UE4物理
-##基础知识
+# UE4物理
+## 基础知识
 1. 游戏中的物理系统
    游戏物理主要解决两个问题
    1. 碰撞查询(Query):比如我前面有一堵墙，我还可以走多远就会被撞到
@@ -13,9 +13,9 @@
    3. 骨骼网格体SkeletalMesh
    4. LandScape地形
    5. PhysicsVolume(BrushComponent)
-###碰撞查询
+### 碰撞查询
 1. 人物的移动距离是根据初中物理所学s=v*t得到的，v是当前人物的移动数据，而t是移动时长，在游戏时间t是很小的时间片，游戏中并不会有真正的连续移动，当t足够小时，每次移动量也很小，将人物SetActorLocation到这个小移动量表示的世界坐标里，就可以得到看似莲须的移动效果，本质是极小量的瞬移。在每次计算移动量时，都会进行碰撞查询，具体是用人的胶囊体向速度方向进行扫描，他返回的结果是一个比例，如果比例是1.0，那么就能够执行完整的瞬移，如果比例是0.5，就只能执行一半的瞬移长度，如果是0，就进行不瞬移；
-####一些参数
+#### 一些参数
 ![](https://pic2.zhimg.com/80/v2-f7a90a5c4fda6753c65b0fc8d52b9ebd_720w.jpg)
 1. Collision Enable
    1. NoCollision:在物理引擎中此形体将不具有任何表示，不可用于空间查询(光线投射，Overlap)或模拟(刚体，约束)，此设置可提供最佳性能，尤其是对移动对象。
@@ -46,23 +46,23 @@ PenetrationDepth:渗透深度
 第二种是InitialOverlap，开始位置就检测到了Overlap
 ![](https://pic2.zhimg.com/80/v2-8d8508ccf881d5025187b9f18dd742f5_720w.jpg)
 这时候bStartPenetrating是true，通过渗透深度计算可以获得PenetrationDepth，这个参数对于处理移动中穿透的情况非常重要
-####碰撞查询
+#### 碰撞查询
 ![](https://cdn2.unrealengine.com/blog/FilterTable-900x490-756106034.jpg)
 需要明白两点
 1. 只有两个对象互相Block时，才会真正的被阻挡，其他情况下不会
 2. 只要有一方Ignore，就不会产生Overlap事件
-####一些例子
+#### 一些例子
 ![](https://cdn2.unrealengine.com/blog/ObjectExample-944x854-260481718.jpg)
 首先Player向前移动，首先他将Overlap Sharp，因为Player是Pawn类型，Block WorldStatic ，而Sharp是WorldStatic，Overlap Pawn ，所以最后的结果是Overlap，当Player继续向前移动，会有Player Block Brick Wall ，因为 Player是Pawn，Block WorldStatic ,而Brick Wall 是WorldStatic ，Block Pawn，最后的结果是Block
-##深入了解
-###Mesh组件和物理
+## 深入了解
+### Mesh组件和物理
 ![](https://pic1.zhimg.com/80/v2-b5184d4d38e6bb3834f4fbad1d1041c4_720w.jpg)
 对于放在场景中的石块等StaticMesh，它的物理一般在建模软件里就应该被创建好，导入到UE时根据导入的数据创建物理信息，其本质就是在编辑器里给StaticMeshComponent构建一个UBodySetup，在游戏运行的时候创建运行时的基本物理数据UBodyInstance。
 >UbodySetup和UBodyInstance
 >* UbodySetup就是一个静态的物理数据，一般在游戏运行前就已经构建好了
 >* UBodyInstance是一个在游戏时正在起作用的物理数据，运行时才真正出现，通过一个UbodySetup是可以创建出多个UBodyInstance的
 对于骨骼网格体SkeletalMesh，由于数据比较多，他的物理数据储存在PhysicsAsset里面。在游戏运行的时候，SkeletalMeshComponent会读取物理资产里面的数据UBodySetup随后在通过UBodySetup给角色创建出对应的基本物理数据UBodyInstance。
-###物理的创建时机
+### 物理的创建时机
 1. UStaticMeshComponent的物理创建
     首先是UStaticMeshComponent。可以看到在场景里面加载Actor并注册UActorComponent的时候会对UPrimitiveComponent组件进行物理信息的创建。其实除了SkeletalMEshComponent以外，所有继承自UPRimitiveComponent的组件（第一部分提到的那5中都是)都会在注册后就创建物理数据(对于直接继承UActorComponent的组件，如移动组件就不会执行此操作)。因此除了SKeletalMeshComponent以外，其他继承自UPrimitiveComponent的组件物理创建的时机很明确，也就是UActorComponent被注册的时候创建物理(还有一种情况也需要更新物理，比如更换模型的时候)。
 ![](https://pic1.zhimg.com/80/v2-d7ef0f4d62d500dddef497eeb98cd218_720w.jpg)
@@ -72,6 +72,6 @@ PenetrationDepth:渗透深度
 
 
 
-##引用
+## 引用
 [物理模块浅析[原理分析]](https://zhuanlan.zhihu.com/p/35686607)
 [UE4的移动碰撞](https://zhuanlan.zhihu.com/p/33529865)

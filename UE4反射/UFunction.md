@@ -1,5 +1,5 @@
-#UFunction
-##函数说明符
+# UFunction
+## 函数说明符
 * BlueprintAuthorOnly
   如果在具有网络权限的机器上运行(服务器。专用服务器或单人游戏)，此函数将仅从蓝图代码中执行
 * BlueprintCosmetic
@@ -30,7 +30,7 @@
   此函数将通过网络复制，但是可能会因带宽限制或网络错误而失败，配合Client或Server配合使用才有效
 * WithValidation
   用于声明名称和主函数相同的附加函数，但是末尾需要添加“_Validate",此函数使用相同的参数，但是会返回bool，已指示是否继续调用主函数
-##元数据说明符
+## 元数据说明符
 * AdvancedDisplay="Param1,Param2,.."
   以逗号分隔的参数列表将显示为高级引脚(需要UI扩展)
 * AdvancedDisplay=N

@@ -1,5 +1,5 @@
-#Slate编程
-##新建一个S类组件
+# Slate编程
+## 新建一个S类组件
 ~~~c++
 TSharedRef<SButton>MyButton=SNew(SButton);//返回共享引用
 //or
@@ -8,7 +8,7 @@ SAssignNew(MyButton,SButton);//返回共享指针
 //如果在链式编程中直接获取值，直接赋值，在链式编程中想获取值就用SAssignNew
 ~~~
 
-##链式编程优缺点
+## 链式编程优缺点
 
 * 优点：
   1. 效率比UMG要高，因为UMG封装的就是Slate。
@@ -17,7 +17,7 @@ SAssignNew(MyButton,SButton);//返回共享指针
   2. 编写界面制作麻烦且不易维护。
 
 
-##创建Slate子物体的几种方式。
+## 创建Slate子物体的几种方式。
 ~~~c++
 TSharedRef<SDockTab> FCloudBoyModule::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
@@ -54,8 +54,8 @@ TSharedRef<SDockTab> FCloudBoyModule::OnSpawnPluginTab(const FSpawnTabArgs& Spaw
 }
 ~~~
 
-##Slate编写
-###空类中必须要有如下的代码
+## Slate编写
+### 空类中必须要有如下的代码
 ~~~c++
 class SMainSlate:public SCompoundwidget
 {
@@ -71,5 +71,5 @@ public:
     void Construct(const FArgunments& InArgs);
 }
 ~~~
-###宏讲解SLATE_BEGIN_ARGS(){}SLATE_END_ARGS()
+### 宏讲解SLATE_BEGIN_ARGS(){}SLATE_END_ARGS()
 

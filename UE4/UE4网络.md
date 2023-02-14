@@ -1,10 +1,10 @@
-#UE4网络模块
-##基础知识
-###UE4使用的是客户端—服务器模型
+# UE4网络模块
+## 基础知识
+### UE4使用的是客户端—服务器模型
 网络中的一台计算机作为服务器主持作为多人游戏会话，而其他玩家的计算机作为客户端连接到该服务器，然后服务器和连接的计算机分享游戏状态，并提供一种客户端之间的通信方法。(服务器处理gameplay，客户端向用户显示游戏)
 ![](https://docs.unrealengine.com/4.27/Images/InteractiveExperiences/Networking/Overview/NetworkPlayExample.webp)
 
-###网络模式和服务器类型
+### 网络模式和服务器类型
 * 独立
   游戏作为服务器运行，不接受远程客户端连接，参与游戏的玩家必须是本地玩家，
 * 客户端
@@ -23,7 +23,7 @@
   > * 音效发射器
   > * 物理对象
 
-###网络角色和授权
+### 网络角色和授权
 * 授权(Authoritation)
     授权actor被认为是可控制actor的状态，可将信息复制到网络多人游戏会话中的其他机器
 * 远程代理(Simulated Proxy)
@@ -33,7 +33,7 @@
 
 **UE4使用的是默认模型是服务器是授权actor，意味着服务器对游戏状态具有权限，而信息固定从服务器复制给客户端**
 
-###Role和RomoteRole
+### Role和RomoteRole
 要确定谁对特定actor的主控权。需要判断Role属性是否为ROLE_Authority，如果是，说明，这个运行中的实例主管此actor，如果Role是Role_SimulatedProxy或Role_AutonomousProxy,则说明是表现端
 * Role_SimulatedProxy
   标椎模拟路径，根据上次服务器发来的速率对移动进行推算，
@@ -48,7 +48,7 @@
   Role= =ROLE_SimulatedProxy;
   RemoteRole= =ROLE_Authority;
 
-###关于actor与其所属连接，对象的归属性问题
+### 关于actor与其所属连接，对象的归属性问题
 * **连接**
   * 所谓连接，就是客户端连接到服务器，在维持这个连接的条件下，我们才能真正的玩网络游戏。如果我们想要服务器吧某些特定的信息发送给特定的客户端，则需要找到这个连接。
   * 而这个连接的信息储存在PlayerController里面，而这个PlayerController不能是随便的PlayerController，一定是客户端第一次链接到服务器，服务器同步过来的那个PlayerController，因为只有这个PlayerController才包含相关的NetDriver，Connection以及session信息。
@@ -62,14 +62,14 @@
   我们认为persistent maps是Unowned Actor
 
 
-###三种方法得到PlayerController连接
+### 三种方法得到PlayerController连接
 1. 设置自己的owner为拥有连接的PlayerController或者自己owner的owner为拥有连接的PlayerController(也就是官方文档里说的最外层的owner是否为PlayerController且这个PlayerController拥有连接)
 2. 这个actor必须是Pawn而且这个Pawn以及Possess了拥有连接的PlayerController，
 3. 把这个actor的owner为拥有连接的pawn，和第一点的区别是：pawn与controller的绑定方式不是通过owner这个属性，而是这个pawn本身就拥有controller这个属性，所以pawn的owner可能为空
 
 
-##RPC(远程过程调用)
-###RPC基础知识
+## RPC(远程过程调用)
+### RPC基础知识
 RPC是在本地调用但在其他机器上(不同于执行调用的机器)远程执行的函数
 > * 主要作用
 >   执行那些不可靠的暂时性/修饰性游戏事件，比如播放声音，生成粒子或产生其他临时效果，他们对actor的正常运行并不重要。
@@ -93,7 +93,7 @@ RPC是在本地调用但在其他机器上(不同于执行调用的机器)远程
   UFUNCTION(NetMulticast)
   void MulticastRPCFunction();
   ~~~
-###执行
+### 执行
 从服务器调用的RPC
 | Actor所有权 | 未复制 | NetMulticast | Server | CLient |
 | ---------  | -------- | ------------ | ------ | -------|
@@ -110,7 +110,7 @@ RPC是在本地调用但在其他机器上(不同于执行调用的机器)远程
 | Server_Owned actor |在执行调用的客户端上运行 | 在执行调用的客户端上运行 | 丢弃 | 在执行调用的客户端上运行 |
 | UnOwned actor | 在执行调用的客户端上运行 | 在执行调用的客户端上运行 | 丢弃 | 在执行调用的客户端上运行 |
 
-###可靠性
+### 可靠性
 默认情况下，RPC并不可靠，要确保在远程机器上执行RPC调用，可以指定可靠性
 ~~~c++
 UFUNCTION(Client,Reliable)
@@ -121,7 +121,7 @@ void ClientRPCFunction();
 * 可靠RPC
   保证到达预定目的地，并在成功接收之前一直保留在队列中，其适用于GamePlay很关键或者不经常调用的函数，例如碰撞事件，武器发射的开始和结束，或actor生成
 
-###关于RPC的几个问题
+### 关于RPC的几个问题
 1. Owner是如何在RPC调用中生效的？
    在AActor::GetFunctionCallspace里面，每次调用RPC函数时，会调用该函数判断当前是不是在远端调用，是的话会通过网络发送RPC。GetFunctionCallspace里面会通过Owner找到Connection’信息
    
@@ -138,37 +138,37 @@ void ClientRPCFunction();
    * 返回值
     一个RPC函数是不能有返回值的，因为本身的执行就是一次消息的传递。如果一个客户端执行一个ServerRPC，如果有返回值的话，那么岂不是服务器执行后还要再发送一个消息给客户端，如果还有返回值的话那岂不是无限循环？因此RPC不能有返回值。
 
-###RPC时序和时效的问题
+### RPC时序和时效的问题
 1. 同一个Channel的Reliable的RPC一定是保序的，且无论网络状况，一定能发送到对端
 2. Unreliable的RPC可能是乱序，也可能会被丢弃掉
 3. 只有NetMulticast且UnreliabledeRPC才会被延迟发送，其他RPC立即写入Connection的SendBuffer(对端实际收到的时间不能保证)
 4. RPC与属性回调的时序不可保证，最经典的比如beginplay；
 
-##同步
-###属性同步
+## 同步
+### 属性同步
 > 非休眠状态下的Actor的属性同步：在服务器属性值发生改变的情况下执行
 > 休眠的Actor：不同步
 > 回调函数执行条件：服务器同步过来的数值和客户端不相同
 
-####属性同步的原理
+#### 属性同步的原理
 服务器在创建同步通道的时候把给每一个actor对象创建一个属性变化表，里面记录一个当前默认的Actor属性值，之后，每次属性发生变化的时候，服务器就会判断新的值与当前属性变化表里面的值是否相同，如果不同就把数据同步给客户端并修改属性变化表里的数据，对于一个非休眠且保持连接的Actor，它的属性变化表一直存在的。
 ####结构体的属性同步
 UE里面的UStruct类型的结构体在反射系统中对应的是USrriptStruct，它本身可以被标记为Replicated并且结构体内的数据默认都会被同步，而且如果里面还有子结构体的话也仍然会递归的进行同步。如果不想同步的话，需要在对应的属性标记Notreplicated，而且这个标记只对UStruct有效，对UClass无效。
 有一点特别的是，Struct结构内的数据是不能标记Replicated的。如果你给Struct里面的属性标记replicated，UHT在编译的时候就会提醒你编译失败。
-####属性回调
+#### 属性回调
 * 首先要知道，同步操作触发是由服务器决定的，所以不管客户端是什么值，服务器觉得该同步的时候就会把数据同步给客户端，而回调操作是客户端执行，客户端会判断当前的值是否相同来决定是否产生回调。
 * 关于属性回调的几个问题
   1. 属性回调和RPC的区别?
     属性回调理论上一定会执行，而RPC函数有可能由于错过执行时机不再执行
 
-###组件同步
+### 组件同步
 1. 静态组件
    一旦Actor被标记为同步，那么这个actor身上默认挂载的组件也会随着Actor一起同步给客户端。
    什么事默认挂载的组件呢？就是C++构造函数里面创建的默认组件或者蓝图里添加的组件，
 2. 动态组件 
    对于动态组件，就是在游戏运行过程中，服务器创建或删除的组件，比如一个玩家走进一个洞穴时，给洞穴里面的火把添加一个粒子特效组件，然后同步到客户端上，当玩家离开时删除这个组件，客户端上也随之删除这个组件，我们必须在attach到actor上并设置他的Replicate属性为true；
    
-###变量同步
+### 变量同步
 选择变量同步属性Replication为Replicated，有三个可选值
 1. None 默认值，服务端不会同步给所有客户端
 2. Replicated：在服务端修改，会同步给其他客户端
@@ -183,7 +183,7 @@ UFUNCTION()
 
 OnRep函数调用规则：更改变量的那个客户端或服务器不会调用OnRep函数，需要手动调用。其他客户端一旦变量改变（被同步）将自动调用OnRep函数。
 
-###注意事项
+### 注意事项
 1. 尽可能少使用RPC或者复制蓝图函数，在合适的情况下改用RepNotify
 2. Multicast函数会导致会话中各连接客户端的额外网络流量，需尤其少用
 3. 若能保证非复制函数仅在服务器上运行，则服务器RPC中无需包含纯服务器逻辑
@@ -193,7 +193,7 @@ OnRep函数调用规则：更改变量的那个客户端或服务器不会调用
 7. 使用C++函数中的IsLocallyControlled函数或者蓝图中的IsLocally Controlled函数，可检查Pawn是否受本地控制，基于执行是否拥有客户端相关来过滤函数。
 
 
-###多人模式下的GamePlayer框架
+### 多人模式下的GamePlayer框架
 * GameInstance 
   GameInstance在引擎会话的持续时间内一直存在，意味着引擎启动时创建，在引擎关闭后才会销毁或更换，服务器和客户端都存在着一个独立的GameInstance，这些实例彼此互不通信
 * GameMode
