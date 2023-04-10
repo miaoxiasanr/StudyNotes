@@ -9,6 +9,7 @@
   - [RPC(远程过程调用)](#rpc远程过程调用)
     - [RPC基础知识](#rpc基础知识)
     - [执行](#执行)
+    - [相关性](#相关性)
     - [可靠性](#可靠性)
     - [关于RPC的几个问题](#关于rpc的几个问题)
     - [RPC时序和时效的问题](#rpc时序和时效的问题)
@@ -132,6 +133,89 @@ RPC是在本地调用但在其他机器上(不同于执行调用的机器)远程
 | Owned By Different Client | 在执行调用的客户端上运行 | 在执行调用的客户端上运行 | 丢弃 | 在执行调用的客户端上运行 |
 | Server_Owned actor |在执行调用的客户端上运行 | 在执行调用的客户端上运行 | 丢弃 | 在执行调用的客户端上运行 |
 | UnOwned actor | 在执行调用的客户端上运行 | 在执行调用的客户端上运行 | 丢弃 | 在执行调用的客户端上运行 |
+
+
+### 相关性
+网络相关性是虚幻为了提升网络传输效率而提供的一种设计思路。在庞大的世界中，作为参与游戏的玩家在网络中并不需要关心所有人的一举一动，相关性就是从某种角度上描述了对方的网络信息是否需要同步给你（与你相关的，他的网络数据会同步给你，与你无关的，他的网络数据不会同步给你）。
+![](https://www.uejoy.com/wp-content/uploads/2023/01/1-2.png)
+* Only Relevant to Owner 只和Owner相关
+  当勾选Only Relevant to Owner，则只会发送给他的Owner，不会发送给任何人，并且在其他人的客户端不会被渲染。
+  > Owner的概念：你生成的对象Actor，添加的组件等都需要有个归属，一般Actor没有指认关系则归属于关卡。组件如果在构造函数中使用CreateDefaultSubObject创建，则归属于所在类的实例的对象。如果是运行时创建，使用NewObject创建，则归属于NewObject时填入的Outer。
+  > 使用Owner的原因：主要是为了溯源，解决对象释放依赖问题。
+* Always Relevant 永远和所有人相关（覆盖OnlyRelevanttoOwner）
+  顾名思义，就是无论在任何地方，任何角落都能接受到此对象的网络数据信息。
+* Net Use Owner Relevancy 使用Owner的相关性
+* Net Cull Distance Squared 与距离相关(此参数需要设置距离的平方)
+  所有的Actor都是默认使用距离进行相关性检测的，超过设定的距离在网络中就不会向对方发送数据了。
+~~~c++
+//被控制的网络对象 viewtarge 视点位置
+//检查是否和正在被控制的网络对象具有网络相关性
+//@param RealViewer 通常是PlayerController
+//@param  ViewTarget 通常是Pawn
+struct ENGINE_API FNetViewer
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY()
+	UNetConnection* Connection;
+
+	/** The "controlling net object" associated with this view (typically player controller) */
+	UPROPERTY()
+	class AActor* InViewer;
+
+	/** The actor that is being directly viewed, usually a pawn.  Could also be the net actor of consequence */
+	UPROPERTY()
+	class AActor* ViewTarget;
+
+	/** Where the viewer is looking from */
+	UPROPERTY()
+	FVector ViewLocation;
+
+	/** Direction the viewer is looking */
+	UPROPERTY()
+	FVector ViewDir;
+}
+
+bool AActor::IsNetRelevantFor(const AActor* RealViewer, const AActor* ViewTarget, const FVector& SrcLocation) const
+{
+  //如果 Actor 是 bAlwaysRelevant、Owner为 Pawn 或 PlayerController、本身为 Pawn 或者 Pawn 是某些行为（如噪音或伤害）的发起者，则其具有相关性
+    if (bAlwaysRelevant || IsOwnedBy(ViewTarget) || IsOwnedBy(RealViewer) || this == ViewTarget || ViewTarget == GetInstigator())
+    {
+        return true; 
+    }
+    //使用其owned的网络相关性
+    else if (bNetUseOwnerRelevancy && Owner) //使用其owned的网络相关性
+    {
+        return Owner->IsNetRelevantFor(RealViewer, ViewTarget, SrcLocation);
+    }
+    //
+    else if (bOnlyRelevantToOwner) //只和所有者相关
+    {
+        return false;
+    }
+    //
+    else if (RootComponent && RootComponent->GetAttachParent() && RootComponent->GetAttachParent()->GetOwner() && (Cast<USkeletalMeshComponent>(RootComponent->GetAttachParent()) || (RootComponent->GetAttachParent()->GetOwner() == Owner)))
+    {
+        //被附加到另一个 Actor 的骨架模型，它的相关性将取决于其所在基础的相关性
+        return RootComponent->GetAttachParent()->GetOwner()->IsNetRelevantFor(RealViewer, ViewTarget, SrcLocation);
+    }
+    //如果 Actor 是不可见的 (bHidden == true) 并且它的 Root Component 并没有碰撞，那么则不具有相关性，
+    else if(IsHidden() && (!RootComponent || !RootComponent->IsCollisionEnabled()))
+    {
+        return false; 
+    }
+    //如果没有 Root Component 的话，AActor::IsNetRelevantFor() 会记录一条警告，提示是否要将它设置为 bAlwaysRelevant=true。
+    if (!RootComponent)
+    {
+      UE_LOG(LogNet, Warning, TEXT("Actor %s / %s has no root component in AActor::IsNetRelevantFor. (Make bAlwaysRelevant=true?)"), *GetClass()->GetName(), *GetName() );
+        return false;
+    }
+    //距离相关性 使用视野距离判断
+    return !GetDefault<AGameNetworkManager>()->bUseDistanceBasedRelevancy ||
+            IsWithinNetRelevancyDistance(SrcLocation);
+}
+~~~
+[UE4网络相关性解读（Relevant）](https://www.uejoy.com/?p=495)
 
 ### 可靠性
 默认情况下，RPC并不可靠，要确保在远程机器上执行RPC调用，可以指定可靠性

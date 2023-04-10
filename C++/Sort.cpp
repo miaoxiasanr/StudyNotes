@@ -1,3 +1,4 @@
+#include<vector>
 int BubbleSort(vector<int>&res)
 {
     int len=res.size();
