@@ -1,0 +1,1 @@
+[实现带Viewport和Thumbnail的自定义Asset](https://zhuanlan.zhihu.com/p/613083956)
