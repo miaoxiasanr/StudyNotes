@@ -186,9 +186,62 @@ void FSubsystemCollectionBase::Deinitialize()
 
 * DynamicSubsystem其为动态SubSystem，这里的动态指的是随着模块的加载释放来创建销毁。要理解这点，需要先理解UE4的模块机制。
 #### UE4的模块机制
-* 简单来说，一个uproject项目或者Uplugin插件可以包含多个Module模块，每个Module可以有个Build.cs，每个模块可以被编译成dll。模块之间可以相互引用。因此一个模块可能会有多个依赖的其他模块。假设需要依赖的模块叫做：DependencyModules。引擎的机制是依赖一个模块的时候就会自动的加载
+* 简单来说，一个uproject项目或者Uplugin插件可以包含多个Module模块，每个Module可以有个Build.cs，每个模块可以被编译成dll。模块之间可以相互引用。因此一个模块可能会有多个依赖的其他模块。假设需要依赖的模块叫做：DependencyModules。引擎的机制是依赖一个模块的时候就会自动的加载。
 
+#### Plugins的SubSystem什么时候创建的呢？
+* 其实是在第一次初始化的时候，用数目来判断是否是第一次创建，然后用FSubsystemModuleWatcher初始化。
+* FSubsystemModuleWatcher初始化最重要的就是遍历当前的UDynamicSubSystem子类们，并按照模块划分存储进DynamicSystemModuleMap，这样之后就知道加载或释放某个模块的时候，应该去创建或销毁哪些SubSystem类型对象。
+~~~c++
+void FSubsystemCollectionBase::Initialize(UObject* NewOuter)
+{
+    if (SubsystemCollections.Num() == 0)//静态变量，用数目来判断是第一次创建
+    {
+        FSubsystemModuleWatcher::InitializeModuleWatcher();
+    }
+}
+void FSubsystemModuleWatcher::InitializeModuleWatcher()
+{
+    // 获得所有UDynamicSubsystem的子类
+    TArray<UClass*> SubsystemClasses;
+    GetDerivedClasses(UDynamicSubsystem::StaticClass(), SubsystemClasses, true);
 
+    for (UClass* SubsystemClass : SubsystemClasses) //遍历
+    {
+        if (!SubsystemClass->HasAllClassFlags(CLASS_Abstract))  //不为抽象类
+        {
+            UPackage* const ClassPackage = SubsystemClass->GetOuterUPackage();//获得所属于的包
+            if (ClassPackage)
+            {
+                const FName ModuleName = FPackageName::GetShortFName(ClassPackage->GetFName());
+                if (FModuleManager::Get().IsModuleLoaded(ModuleName))
+                {
+                    TArray<TSubclassOf<UDynamicSubsystem>>& ModuleSubsystemClasses = FSubsystemCollectionBase::DynamicSystemModuleMap.FindOrAdd(ModuleName);
+                    ModuleSubsystemClasses.Add(SubsystemClass);//添加到DynamicSystemModuleMap
+                }
+            }
+        }
+    }
+    //注册模块加载和释放事件
+    ModulesChangedHandle = FModuleManager::Get().OnModulesChanged().AddStatic(&FSubsystemModuleWatcher::OnModulesChanged);
+}
+~~~
+* 然后就是ONmodulesChanged事件的注册，这样在后面加载的模块就能够得到通知。
+~~~c++
+void FSubsystemModuleWatcher::OnModulesChanged(FName ModuleThatChanged, EModuleChangeReason ReasonForChange)
+{
+    switch (ReasonForChange)
+    {
+    case EModuleChangeReason::ModuleLoaded:
+        AddClassesForModule(ModuleThatChanged);//创建一个模块的DynamicSubsystem类们
+        break;
+
+    case EModuleChangeReason::ModuleUnloaded:
+        RemoveClassesForModule(ModuleThatChanged);//销毁一个模块的DynamicSubsystem类们
+        break;
+    }
+}
+~~~
+**总而言之，UDynamicSubSystem提供的额外功能只有加载和卸载功能**
 
 
 ##### 一些思考
@@ -202,6 +255,16 @@ void FSubsystemCollectionBase::Deinitialize()
    ~~~
    当FSubSystemCollectionBase::Deinitialize()里进行Subsystemmap.Empty()后，USubsystem对象就没有被引用了，在下一帧的GC的时候，就会被判定为PendingKill的对象，从而被Destroy。
    > 这里的妙用是直接利用了UObject对象之间引用所带来的生命周期绑定机制，来直接把USubsystem对象的生命周期和其Out对象关联起来。
-2. 
-[《InsideUE4》GamePlay架构（十一）Subsystems](https://zhuanlan.zhihu.com/p/158717151)
-[UE4中的Subsystem](https://www.cnblogs.com/yejianying/p/15029111.html#wiz-toc-0-95633076)
+2. 动态加载MyPlugin里的GameInstanceSubSystem可以正常工作吗？
+   答案是可以，GameInstanceSubSystem需要创建的时机是游戏运行时，在MyPlugin这个模块的dll加载的时候，其自身带的反射代码里的全局静态变量会自动的在进程里注册进各种类型，这个时候就可以正常的时候使用MyPlugin里定义的非DynamicSubSystem了。
+3. 为什么只有UEngineSubSystem和UEditorSubSystem才是UDynamicSubSystem?
+   从生命周期来说，5类中只有UEngineSubSystem和UEditorSubSystem的生命周期是和游戏的进程绑定在一起的。
+   > 游戏进程启动的时候创建SubSystem叫做默认创建，游戏启动一段时间后创建SubSystem叫做动态创建.
+   
+   而另外三个UGameInstanceSubSystem,UWorldSubSystem和ULocalPlayerSubSystem都是和一场游戏的生命周期绑定的。
+4. SubSystem支持网络复制吗？
+   不支持，因为UE里的网络复制是基于Actor的ActorChannel的，而SubSystem是普通的UObject对象。
+   > 可以使用GameState和PlayerState等一些内建的GamePlay通信。
+##参考文章
+1. [《InsideUE4》GamePlay架构（十一）Subsystems](https://zhuanlan.zhihu.com/p/158717151)
+2. [UE4中的Subsystem](https://www.cnblogs.com/yejianying/p/15029111.html#wiz-toc-0-95633076)

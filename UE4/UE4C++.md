@@ -624,6 +624,11 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ONEPARAM(FDelegateTest, class AActor*, MyActo
 UPROPERTY(BlueprintAssignable)
 FDelegateTest TestDelegate;
 ~~~
+
+使用委托
+~~~c++
+TestDelegate.AddDynamic(UEObject,FUnctionName);
+~~~
 ### 委托应用场景
 1. 单播委托： 当我们只需要在C++中绑定和调用，且只有一个函数需要绑定委托时，可以使用单播委托。
 当然，这个委托的绑定和调用可以通过二次函数调用暴露给蓝图。就是绑定和调用的函数再包裹一层，但一般没有必要。
