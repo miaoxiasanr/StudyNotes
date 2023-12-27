@@ -245,6 +245,31 @@ void ClientRPCFunction();
    * 返回值
     一个RPC函数是不能有返回值的，因为本身的执行就是一次消息的传递。如果一个客户端执行一个ServerRPC，如果有返回值的话，那么岂不是服务器执行后还要再发送一个消息给客户端，如果还有返回值的话那岂不是无限循环？因此RPC不能有返回值。
 
+5. 属性同步和RPC混合过程汇中的问题
+   * 创建Actor之后作为参数调用RPC
+~~~C++
+//.h
+
+void Test();
+
+UFUNCTION(Client, Reliable)
+void GoClientActor(AActor* Actor);
+//.cpp
+void Test()
+{
+    AActor* NewActor=GetWorld()->SpawnActor<>Actor>(ActorClass);
+    GoClientActor(NewActor);
+}
+
+void ATurBoCharacter::GoClientActor_Implementation(AActor* Actor)
+{
+
+}
+~~~
+结果是什么呢？结果是RPC在客户端执行的时候，实参会是NULL；
+原因是什么呢？
+* 属性同步的网络包时在Tick的末尾发送的，但是RPC有的时候会立刻发送，有的时候会跟着属性同步发送，所以导致了这个问题。
+> 可靠的单播，多播的RPC和不可靠的单播RPC会立刻发送网络包出去。不可靠的多播RPC会暂时放入RPC队列，但开始复制属性的时候，会加入那次同步的队尾。
 ### RPC时序和时效的问题
 1. 同一个Channel的Reliable的RPC一定是保序的，且无论网络状况，一定能发送到对端
 2. Unreliable的RPC可能是乱序，也可能会被丢弃掉

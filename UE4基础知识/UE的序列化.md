@@ -103,6 +103,51 @@ void UObject::Serialize(FArchive& Ar)
 }
 ~~~
 由此可见UObject的第一个Serialize(FArchive&Ar)方法实际上接受一个FArchive类型的输入，FStructuredArchiveFormArcive就是将传入的FArchive包了一层并做了一些处理，最终返回了FStructuredArchive的成员Record，并以此为参数传入UObject的第二个Serialize()方法。
+
+
+### UObject基础
+通过NewObject<>()方法实例化一个UObject时需要传入一个参数Outer来指定这个UObject属于哪一个UPackage，如果不传则创建一个临时的Package，每个UObject都存在于一个UPackage中，UObeject的保存和加载也是基于UPackage。
+~~~c++
+template< class T >
+FUNCTION_NON_NULL_RETURN_START
+	T* NewObject(UObject* Outer = (UObject*)GetTransientPackage())
+FUNCTION_NON_NULL_RETURN_END
+{
+	// Name is always None for this case
+	FObjectInitializer::AssertIfInConstructor(Outer, TEXT("NewObject with empty name can't be used to create default subobjects (inside of UObject derived class constructor) as it produces inconsistent object names. Use ObjectInitializer.CreateDefaultSubobject<> instead."));
+
+	FStaticConstructObjectParameters Params(T::StaticClass());
+	Params.Outer = Outer;
+	return static_cast<T*>(StaticConstructObject_Internal(Params));
+}
+~~~
+
+
+### UPackage结构
+![](https://pic1.zhimg.com/80/v2-67dc42c1f35fbf0e7509fe7f6d6f9988_720w.webp)
+
+* File Summary 文件头信息
+* NameTable 包中对象的名字表
+* Import Table 存放被该包中对象引用的其他包中的对象信息(路径名和类型)
+* Export Table 该包中的对象信息(路径名和类型)
+* Export Objects 所有Export Table中对象的实际数据
+
+### UObject的保存
+对一个Object调用序列化函数后大致过程如下
+1. 通过GetClass函数获取当前的类信息，通过GetOuter函数获取Outer。这个Outer实际上指定了当前UObject会被当做哪一个对象的子对象进行序列化。
+2. 判断当前等待序列化的对象的类UClass的信息是否被载入。
+3. 如果UClass没有被载入，预载入当前类的信息
+4. 预载入当前类的默认对象CDO的信息
+5. 载入名字
+6. 载入Outer
+7. 载入当前对象的类信息，保存于ObjClass对象中
+8. 载入对象的所有脚本成员变量信息。这一步必须在类信息加载后，否则无法根据类信息获得有哪些脚本成员变量需要加载。
+9. 对应函数为SerializeScriptProperties,序列化为类中定义的对象属性
+10. 调用FArchive.MarkScriptSerializationStart,标志脚本序列化数据开始
+11. 调用SerializeTaggedProperties，序列化对象属性，并且加入Tag
+12. 调用FArchive.MarkScriptSerializationEnd,标志脚本序列化数据结束。
+### UObject的加载
+
 [Unreal Engine序列化个人笔记](https://zhuanlan.zhihu.com/p/616109129)
 [UE 序列化介绍及源码解析](https://zhuanlan.zhihu.com/p/617464719)
 [UE4中的Serialization](https://stonelzp.github.io/ue4-serialization/)

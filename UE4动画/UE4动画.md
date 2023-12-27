@@ -98,3 +98,4 @@ AnimationMotage是对Animation Sequence等资源的扩充，可以方便的使�
 [UE4 动画系统 源码及原理剖析](https://blog.csdn.net/qq_23030843/article/details/109103433)
 [UE4动画系统基础](https://zhuanlan.zhihu.com/p/62401630)
 [UE4 动画系统优秀文摘](https://zhuanlan.zhihu.com/p/413608091)
+[【UE4】图解动画系统源码](https://zhuanlan.zhihu.com/p/446851284)

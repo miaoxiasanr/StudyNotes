@@ -162,8 +162,8 @@ C++的插件通常会包含一个继承自IModuleInterface的类，用于注册�
 //.h
 #pragma once  
   
-#include "CoreMinimal.h"  
-#include "Modules/ModuleManager.h"  
+ #include "CoreMinimal.h"  
+ #include "Modules/ModuleManager.h"  
 
 class FNewCreateModule : public IModuleInterface  
 {  
@@ -177,15 +177,15 @@ public:
 
 //.cpp
 
-#include "NewCreateModule.h"  
+ #include "NewCreateModule.h"  
   
-#define LOCTEXT_NAMESPACE "FNewCreateModule"  
+ #define LOCTEXT_NAMESPACE "FNewCreateModule"  
 
 void FNewCreateModule::StartupModule() {}  
   
 void FNewCreateModule::ShutdownModule() {}  
 
-#undef LOCTEXT_NAMESPACE  
+ #undef LOCTEXT_NAMESPACE  
 IMPLEMENT_MODULE(FNewCreateModule, NewCreate)
 ~~~
 
@@ -257,5 +257,8 @@ extern "C" void IMPLEMENT_MODULE_NewCreate() { }
 ~~~
 实际上是定义了一个static的对象，它实际上是利用了C++的一个特性：具有static的对象的初始化会在main函数的第一个语句之前执行。
 所以当引擎启动时。所有的模块都会构造一个static对象，并进行初始化。
+
+
+
 
 [UE 插件与工具开发：基础概念](https://imzlp.com/posts/75405/)
