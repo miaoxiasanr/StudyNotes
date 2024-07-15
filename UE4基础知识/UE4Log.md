@@ -167,5 +167,38 @@ UE_LOG(LogMyAwesomeGameStatic, Log, TEXT("Test Log Message"));//Error,只在A.CP
 
 ~~~
 
+
+## 使用UE_LOGFMT打印日志(UE5)
+> 此宏是UE5.2版本中被引入的，更早的版本是不能使用的。
+> 为了使用UE_LOGFMT需要引用 #include "Logging/StructuredLog.h"头文件
+
+1. 新加UE_LOGFMT宏的原因
+   1. UE_LOG 非常冗长，需要开发人员不断的将日志文件包装在TEXT宏中
+   2. UE_LOF无法打印一些基本类型，如bool或FString
+   3. UE_LOG在打印不同的变量时(如float, int,bool,FString)时需了解变量的类型。
+
+### UE_LOGFMT使用方法
+1. 常规使用
+~~~c++
+	UE_LOGFMT(LogTemp, Log, "This message will print to my log");
+~~~
+
+2. 直接将变量打印到Log中
+~~~c++
+FString Name("SomeName");
+int32 Value = 999;
+UE_LOGFMT(LogTemp, Log, "Printing my Name {0} with Value {1}", Name, Value);
+~~~
+
+3. 基于位置的参数(字段值必须与日志里引用的字段完全匹配)
+~~~c++
+UE_LOGFMT(LogCore, Warning, "Loading '{0}' failed with error {1}", Package->GetName(), ErrorCode);
+~~~
+4. 命名参数(参数中必须包含格式化字符串所引用的每个字段，顺序无关紧要，而且允许使用额外的字段)
+~~~c++
+UE_LOGFMT(LogCore, Warning, "Loading '{Name}' failed with error {Error}", ("Error", ErrorCode), ("Name", Package->GetName()), ("Flags", LoadFlags));
+~~~
+
 [UE4-正确使用LOG](https://stonelzp.github.io/how-to-use-log/)
 [虚幻UE_LOG使用教程](https://zhuanlan.zhihu.com/p/463724067)
+[虚幻引擎中的日志系统](https://zhuanlan.zhihu.com/p/704236340)
